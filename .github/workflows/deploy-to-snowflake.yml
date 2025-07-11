@@ -22,8 +22,10 @@ jobs:
 
       - name: Install SnowSQL
         run: |
+          SNOWSQL_VERSION="1.2.21"
+          SNOWSQL_URL="https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/${SNOWSQL_VERSION}/linux_x86_64/snowsql-${SNOWSQL_VERSION}-linux_x86_64.tar.gz"
           mkdir -p $HOME/snowsql_install
-          wget -qO snowsql.tar.gz https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-linux_x86_64.tar.gz
+          wget -qO snowsql.tar.gz "$SNOWSQL_URL"
           tar -xzf snowsql.tar.gz -C $HOME/snowsql_install --strip-components=1
           echo "$HOME/snowsql_install/bin" >> $GITHUB_PATH
 
