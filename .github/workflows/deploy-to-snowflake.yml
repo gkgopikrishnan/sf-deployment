@@ -8,20 +8,23 @@ on:
       - prod
     tags:
       - 'v*'
+
 permissions:
   contents: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
 
-      # - name: Install SnowSQL
-      #   run: |
-      #     wget https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.21-linux_x86_64.bash
-      #     bash snowsql-1.2.21-linux_x86_64.bash -y -d ./snowsql_install
-      #     echo "${GITHUB_WORKSPACE}/snowsql_install/bin" >> $GITHUB_PATH
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install SnowSQL
+        run: |
+          wget https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.21-linux_x86_64.bash
+          bash snowsql-1.2.21-linux_x86_64.bash -y -d $HOME/snowsql_install
+          echo "$HOME/snowsql_install/bin" >> $GITHUB_PATH
 
       - name: Deploy SQL Scripts
         env:
@@ -33,14 +36,14 @@ jobs:
           SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
           SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
         run: |
-          ~/bin/snowsql -a $SNOWFLAKE_ACCOUNT \
-            -u $SNOWFLAKE_USER \
-            -p $SNOWFLAKE_PASSWORD \
-            -r $SNOWFLAKE_ROLE \
-            -w $SNOWFLAKE_WAREHOUSE \
-            -d $SNOWFLAKE_DATABASE \
-            -s $SNOWFLAKE_SCHEMA \
-            -f sql/deploy.sql
+          snowsql -a $SNOWFLAKE_ACCOUNT \
+                  -u $SNOWFLAKE_USER \
+                  -p $SNOWFLAKE_PASSWORD \
+                  -r $SNOWFLAKE_ROLE \
+                  -w $SNOWFLAKE_WAREHOUSE \
+                  -d $SNOWFLAKE_DATABASE \
+                  -s $SNOWFLAKE_SCHEMA \
+                  -f sql/deploy.sql
 
       - name: Archive deployed file
         run: |
