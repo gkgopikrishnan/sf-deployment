@@ -10,17 +10,18 @@ on:
       - 'v*'
 permissions:
   contents: write
-  
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install SnowSQL
-        run: |
-          wget https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.21-linux_x86_64.bash
-          bash snowsql-1.2.21-linux_x86_64.bash
+      # - name: Install SnowSQL
+      #   run: |
+      #     wget https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.21-linux_x86_64.bash
+      #     bash snowsql-1.2.21-linux_x86_64.bash -y -d ./snowsql_install
+      #     echo "${GITHUB_WORKSPACE}/snowsql_install/bin" >> $GITHUB_PATH
 
       - name: Deploy SQL Scripts
         env:
