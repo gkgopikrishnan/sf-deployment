@@ -16,12 +16,19 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    # container:
-    #   image: ghcr.io/openai-tools/snowflake-snowsql:latest  # ✅ Pre-built with SnowSQL
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+
+      - name: Install SnowSQL
+        run: |
+          SNOWSQL_VERSION="1.2.21"
+          SNOWSQL_URL="https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/${SNOWSQL_VERSION}/linux_x86_64/snowsql-${SNOWSQL_VERSION}-linux_x86_64.bash"
+          INSTALL_DIR="$HOME/snowsql_install"
+
+          mkdir -p "$INSTALL_DIR"
+          wget -q "$SNOWSQL_URL" -O install_snowsql.bash
+          bash install_snowsql.bash -y -d "$INSTALL_DIR"
+          echo "$INSTALL_DIR/bin" >> $GITHUB_PATH
 
       - name: Deploy SQL Scripts
         env:
@@ -41,21 +48,3 @@ jobs:
                   -d $SNOWFLAKE_DATABASE \
                   -s $SNOWFLAKE_SCHEMA \
                   -f sql/deploy.sql
-
-      - name: Archive deployed file
-        run: |
-          TIMESTAMP=$(date +'%Y-%m-%dT%H-%M')
-          BRANCH=$(echo "${{ github.ref_name }}" | tr '/' '-')
-          ARCHIVE_DIR="archive"
-          ARCHIVE_FILE="$ARCHIVE_DIR/deploy_${TIMESTAMP}_${BRANCH}.sql"
-
-          mkdir -p $ARCHIVE_DIR
-          mv sql/deploy.sql $ARCHIVE_FILE
-
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
-
-          git add $ARCHIVE_FILE
-          git rm sql/deploy.sql
-          git commit -m "Archived deploy.sql as $ARCHIVE_FILE after successful deployment"
-          git push
