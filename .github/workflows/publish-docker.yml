@@ -1,7 +1,7 @@
 name: Publish SnowSQL Docker Image
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # Run manually from GitHub
 
 jobs:
   build-and-push:

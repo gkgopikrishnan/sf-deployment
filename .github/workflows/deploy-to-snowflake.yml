@@ -16,8 +16,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    container:
-      image: ghcr.io/openai-tools/snowflake-snowsql:latest  # ✅ Pre-built with SnowSQL
+    # container:
+    #   image: ghcr.io/openai-tools/snowflake-snowsql:latest  # ✅ Pre-built with SnowSQL
 
     steps:
       - name: Checkout Repository
