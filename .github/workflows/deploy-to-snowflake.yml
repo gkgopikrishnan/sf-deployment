@@ -8,7 +8,9 @@ on:
       - prod
     tags:
       - 'v*'
-
+permissions:
+  contents: write
+  
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -30,8 +32,29 @@ jobs:
           SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
           SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
         run: |
-          ~/bin/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -p $SNOWFLAKE_PASSWORD -r $SNOWFLAKE_ROLE \
-            -w $SNOWFLAKE_WAREHOUSE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -f sql/create_views.sql
+          ~/bin/snowsql -a $SNOWFLAKE_ACCOUNT \
+            -u $SNOWFLAKE_USER \
+            -p $SNOWFLAKE_PASSWORD \
+            -r $SNOWFLAKE_ROLE \
+            -w $SNOWFLAKE_WAREHOUSE \
+            -d $SNOWFLAKE_DATABASE \
+            -s $SNOWFLAKE_SCHEMA \
+            -f sql/deploy.sql
 
-          ~/bin/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -p $SNOWFLAKE_PASSWORD -r $SNOWFLAKE_ROLE \
-            -w $SNOWFLAKE_WAREHOUSE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -f sql/create_procs.sql
+      - name: Archive deployed file
+        run: |
+          TIMESTAMP=$(date +'%Y-%m-%dT%H-%M')
+          BRANCH=$(echo "${{ github.ref_name }}" | tr '/' '-')
+          ARCHIVE_DIR="archive"
+          ARCHIVE_FILE="$ARCHIVE_DIR/deploy_${TIMESTAMP}_${BRANCH}.sql"
+
+          mkdir -p $ARCHIVE_DIR
+          mv sql/deploy.sql $ARCHIVE_FILE
+
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+
+          git add $ARCHIVE_FILE
+          git rm sql/deploy.sql
+          git commit -m "Archived deploy.sql as $ARCHIVE_FILE after successful deployment"
+          git push
