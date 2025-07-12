@@ -1,7 +1,7 @@
 FROM ubuntu:22.04
 
 ENV INSTALL_DIR=/opt/snowsql
-ENV SNOWSQL_CONFIG_FILE=/root/.snowsql/config
+ENV SNOWSQL_CONFIG_FILE=/home/snowsqluser/.snowsql/config
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
@@ -15,14 +15,22 @@ RUN apt-get update && apt-get install -y \
 # Copy statically built SnowSQL binary
 COPY snowsql ${INSTALL_DIR}/snowsql
 
-# Set permissions and create symlinks
+# Set permissions and symlinks
 RUN chmod +x ${INSTALL_DIR}/snowsql && \
     mkdir -p ${INSTALL_DIR}/bin && \
     ln -sf ${INSTALL_DIR}/snowsql ${INSTALL_DIR}/bin/snowsql && \
     ln -sf ${INSTALL_DIR}/bin/snowsql /usr/local/bin/snowsql
 
-# ✅ Copy custom entrypoint that creates config and forwards args to snowsql
+# ✅ Add a non-root user (optional but recommended for GitHub runners)
+RUN useradd -ms /bin/bash snowsqluser
+
+# ✅ Copy entrypoint that handles config & forwards arguments
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Set working dir and user (optional: for better isolation)
+WORKDIR /home/snowsqluser
+USER snowsqluser
+
+# Final entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
