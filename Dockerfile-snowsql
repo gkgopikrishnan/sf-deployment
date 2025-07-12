@@ -1,12 +1,15 @@
 FROM ubuntu:22.04
 
 ENV INSTALL_DIR=/opt/snowsql
+ENV SNOWSQL_CONFIG_FILE=/root/.snowsql/config
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     bash \
     unzip \
+    libffi-dev \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy statically built SnowSQL binary
@@ -18,7 +21,11 @@ RUN chmod +x ${INSTALL_DIR}/snowsql && \
     ln -sf ${INSTALL_DIR}/snowsql ${INSTALL_DIR}/bin/snowsql && \
     ln -sf ${INSTALL_DIR}/bin/snowsql /usr/local/bin/snowsql
 
-# Optional: suppress config warning (can skip this if GitHub Actions sets config dynamically)
-# RUN mkdir -p /root/.snowsql && echo '[connections]' > /root/.snowsql/config
+# Suppress config warnings by adding minimal config
+RUN mkdir -p /root/.snowsql && \
+    echo "[connections]" > /root/.snowsql/config
+
+# Verify version (optional for debugging)
+# RUN snowsql -v
 
 ENTRYPOINT ["snowsql"]
