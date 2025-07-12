@@ -19,18 +19,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install SnowSQL
-        run: |
-          SNOWSQL_VERSION="1.2.21"
-          SNOWSQL_URL="https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/${SNOWSQL_VERSION}/linux_x86_64/snowsql-${SNOWSQL_VERSION}-linux_x86_64.bash"
-          INSTALL_DIR="$HOME/snowsql_install"
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-          mkdir -p "$INSTALL_DIR"
-          wget -q "$SNOWSQL_URL" -O install_snowsql.bash
-          bash install_snowsql.bash -y -d "$INSTALL_DIR"
-          echo "$INSTALL_DIR/bin" >> $GITHUB_PATH
-
-      - name: Deploy SQL Scripts
+      - name: Run SnowSQL container to deploy SQL
         env:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
@@ -40,11 +36,14 @@ jobs:
           SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
           SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
         run: |
-          snowsql -a $SNOWFLAKE_ACCOUNT \
-                  -u $SNOWFLAKE_USER \
-                  -p $SNOWFLAKE_PASSWORD \
-                  -r $SNOWFLAKE_ROLE \
-                  -w $SNOWFLAKE_WAREHOUSE \
-                  -d $SNOWFLAKE_DATABASE \
-                  -s $SNOWFLAKE_SCHEMA \
-                  -f sql/deploy.sql
+          docker run --rm \
+            -v ${{ github.workspace }}/sql:/sql \
+            ghcr.io/${{ github.repository_owner }}/snowflake-snowsql:latest \
+              -a "$SNOWFLAKE_ACCOUNT" \
+              -u "$SNOWFLAKE_USER" \
+              -p "$SNOWFLAKE_PASSWORD" \
+              -r "$SNOWFLAKE_ROLE" \
+              -w "$SNOWFLAKE_WAREHOUSE" \
+              -d "$SNOWFLAKE_DATABASE" \
+              -s "$SNOWFLAKE_SCHEMA" \
+              -f /sql/deploy.sql
