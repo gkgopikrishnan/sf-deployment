@@ -26,8 +26,9 @@ RUN mkdir -p /root/.snowsql && \
 
 # Verify version (optional for debugging)
 # RUN snowsql -v
-# ✅ Suppress SnowSQL config error
+
+# Suppress SnowSQL config error
 RUN mkdir -p /root/.snowsql && \
     echo '[connections]' > /root/.snowsql/config
-    
+
 ENTRYPOINT ["snowsql"]
