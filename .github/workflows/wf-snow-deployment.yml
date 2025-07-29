@@ -17,39 +17,53 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install SnowSQL (manual .bash installer with debug)
+      - name: Install SnowSQL (manual with full debug)
         run: |
-          set -ex  # enable command tracing and exit on any error
-          
+          set -ex  # Enable tracing and fail on error
+
           SNOWSQL_VERSION=1.2.24
           INSTALL_DIR=/home/runner/snowsql
           SNOWSQL_FILENAME=snowsql-${SNOWSQL_VERSION}-linux_x86_64.bash
           SNOWSQL_URL=https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/${SNOWSQL_FILENAME}
-          
-          echo "Downloading SnowSQL from: ${SNOWSQL_URL}"
+
+          echo "Downloading SnowSQL: $SNOWSQL_URL"
           curl -L -v -o ${SNOWSQL_FILENAME} "${SNOWSQL_URL}"
-          
-          echo "Downloaded file:"
+
+          echo "Download complete. File details:"
           ls -l ${SNOWSQL_FILENAME}
           file ${SNOWSQL_FILENAME}
-          
+
           chmod +x ${SNOWSQL_FILENAME}
-          
           mkdir -p "${INSTALL_DIR}"
-          echo "Running installer..."
-          
-          # Use `yes` to avoid interactive prompt
+
+          echo "Installing to ${INSTALL_DIR}..."
           DEBUG=1 yes '' | bash -x ./${SNOWSQL_FILENAME} -- -y --target "${INSTALL_DIR}"
 
-          echo "Installation directory contents:"
+          echo "Installed files in ${INSTALL_DIR}:"
           ls -R "${INSTALL_DIR}"
 
-          # Add SnowSQL to PATH for this session
+          echo "Add SnowSQL bin to PATH"
           echo "${INSTALL_DIR}/bin" >> $GITHUB_PATH
+          export PATH="${INSTALL_DIR}/bin:$PATH"
 
-      - name: Verify SnowSQL installation
+          echo "Current PATH:"
+          echo $PATH
+
+          echo "Check if snowsql is in PATH:"
+          ls -l $(which snowsql || echo "snowsql not found")
+
+          echo "Try running snowsql version command directly:"
+          if [ -x "${INSTALL_DIR}/bin/snowsql" ]; then
+            "${INSTALL_DIR}/bin/snowsql" -v
+          else
+            echo "SnowSQL binary not found in expected path!"
+            exit 1
+          fi
+
+      - name: Verify SnowSQL installation from PATH
         run: |
-          which snowsql
+          echo "Verifying snowsql from PATH..."
+          which snowsql || { echo "❌ SnowSQL not found in PATH"; exit 1; }
           snowsql -v
 
       - name: Deploy SQL scripts using SnowSQL
