@@ -25,7 +25,7 @@ jobs:
           SNOWSQL_VERSION="1.4.3"
           INSTALL_DIR="$HOME/snowsql"
           SNOWSQL_FILENAME="snowsql-${SNOWSQL_VERSION}-linux_x86_64.bash"
-          SNOWSQL_URL="https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/${SNOWSQL_VERSION}/linux_x86_64/${SNOWSQL_FILENAME}"
+          SNOWSQL_URL="https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/${SNOWSQL_FILENAME}"
           
           # Download installer
           echo "Downloading SnowSQL from $SNOWSQL_URL..."
