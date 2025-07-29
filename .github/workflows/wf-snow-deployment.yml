@@ -1,44 +1,32 @@
-name: Deploy to Snowflake Stable
+name: Deploy to Snowflake stable install
 
 on:
   push:
     branches:
-      - main
+      - main  # Replace with your deployment branch if different
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      SNOWSQL_ACCOUNT: SPHEUCZ-HQ66596
-      SNOWSQL_USER: SFTRAINING
-      SNOWSQL_PASSWORD: GoodSuperluck2025
+      SNOWSQL_ACCOUNT: SPHEUCZ-HQ66596        # Replace with your Snowflake account or use GitHub Secrets
+      SNOWSQL_USER: SFTRAINING                # Replace with your Snowflake user or use GitHub Secrets
+      SNOWSQL_PASSWORD: GoodSuperluck2025     # Replace with your password or use GitHub Secrets securely
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Snowflake CLI via official action
-        uses: Snowflake-Labs/snowflake-cli-action@v1.5
-
-      - name: Find and add snowsql binary path
-        id: find_snowsql
-        shell: bash
+      - name: Install SnowSQL standalone Linux binary
         run: |
-          # Look for the snowsql binary in common pipx installation folders
-          SNOWSQL_PATH=$(find /opt/pipx/venvs /opt/pipx_bin ~/.local/bin -type f -name snowsql -perm -111 2>/dev/null | head -1)
-          if [[ -z "$SNOWSQL_PATH" ]]; then
-            echo "ERROR: snowsql binary not found!"
-            exit 1
-          fi
-          echo "Found snowsql at: $SNOWSQL_PATH"
-          SNOWSQL_BIN_DIR=$(dirname "$SNOWSQL_PATH")
-          echo "SNOWSQL_BIN_DIR=$SNOWSQL_BIN_DIR" >> $GITHUB_ENV
-          echo "$SNOWSQL_BIN_DIR" >> $GITHUB_PATH
+          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowsql-1.4.23-linux_x86_64.bash
+          bash snowsql-1.4.23-linux_x86_64.bash --yes
+          rm snowsql-1.4.23-linux_x86_64.bash
+          echo "$HOME/.snowsql/bin" >> $GITHUB_PATH
 
-      - name: Check snowsql version and location
+      - name: Verify SnowSQL installation
         run: |
-          echo "PATH: $PATH"
           which snowsql
           snowsql -v
 
-      - name: Deploy SQL Script
-        run: snowsql -f sql/deploy.sql
+      - name: Deploy SQL scripts using SnowSQL
+        run: snowsql -f sql/deploy.sql  # Adjust script path as needed
