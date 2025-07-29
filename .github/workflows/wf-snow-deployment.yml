@@ -22,23 +22,25 @@ jobs:
           python3 -m pip install --user pipx
           python3 -m pipx ensurepath
 
-      - name: Verify pipx availability and path
+      - name: Add pipx possible bin directories to PATH
         run: |
-          echo "PATH before adding pipx_bin:"
-          echo "$PATH"
-          which pipx || echo "pipx not found in PATH"
-          pipx --version || echo "pipx version check failed"
+          echo "/opt/pipx_bin" >> $GITHUB_PATH
+          echo "${HOME}/.local/bin" >> $GITHUB_PATH
 
-      # Add the /opt/pipx_bin path to the environment for next steps (where pipx and snowsql are installed)
-      - name: Add pipx bin directory to PATH for subsequent steps
-        run: echo "/opt/pipx_bin" >> $GITHUB_PATH
+      - name: List directories contents for debug
+        run: |
+          echo "Contents of /opt/pipx_bin:"
+          ls -la /opt/pipx_bin || echo "Directory not found"
+          echo "Contents of ~/.local/bin:"
+          ls -la ~/.local/bin || echo "Directory not found"
 
       - name: Install Snowflake CLI manually via pipx
         run: pipx install --force snowflake-cli
 
       - name: Verify Snowflake CLI installation
         run: |
-          which snowsql || (echo "snowsql not found in PATH" && exit 1)
+          echo "PATH: $PATH"
+          which snowsql || (echo "snowsql not in PATH" && exit 1)
           snowsql -v
 
       - name: Deploy SQL scripts to Snowflake
