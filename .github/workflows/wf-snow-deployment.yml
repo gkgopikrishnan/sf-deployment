@@ -1,4 +1,4 @@
-name: Deploy to Snowflake
+name: Deploy to Snowflake new
 
 on:
   push:
@@ -16,8 +16,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Print env and PATH 1
+        run: |
+          echo $PATH
+          env
+    
       - name: Install Snowflake CLI
         uses: Snowflake-Labs/snowflake-cli-action@v1.5
+
+      - name: Print env and PATH 2
+        run: |
+          echo $PATH
+          env
         
       - name: Check Snowflake CLI version
         run: snowsql -v
