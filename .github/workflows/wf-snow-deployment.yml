@@ -18,6 +18,9 @@ jobs:
 
       - name: Install Snowflake CLI
         uses: Snowflake-Labs/snowflake-cli-action@v1.5
-
+        
+      - name: Check Snowflake CLI version
+        run: snowsql -v
+        
       - name: Deploy SQL scripts
         run: snowsql -f sql/deploy.sql   # or your actual script path
