@@ -1,4 +1,4 @@
-name: Deploy to Snowflake new
+name: Deploy to Snowflake manual install
 
 on:
   push:
@@ -16,33 +16,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Print env and PATH 1
-        run: |
-          echo "PATH before Snowflake CLI install:"
-          echo $PATH
-          env
-          
       - name: Install Python and pipx
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install --user pipx
           python3 -m pipx ensurepath
 
-      # Add pipx binaries path so snowsql can be found in next steps
-      - name: Add pipx binary path to environment
-        run: echo "${HOME}/.local/bin" >> $GITHUB_PATH
+      - name: Verify pipx availability and path
+        run: |
+          echo "PATH before adding pipx_bin:"
+          echo "$PATH"
+          which pipx || echo "pipx not found in PATH"
+          pipx --version || echo "pipx version check failed"
+
+      # Add the /opt/pipx_bin path to the environment for next steps (where pipx and snowsql are installed)
+      - name: Add pipx bin directory to PATH for subsequent steps
+        run: echo "/opt/pipx_bin" >> $GITHUB_PATH
 
       - name: Install Snowflake CLI manually via pipx
-        run: ~/.local/bin/pipx install --force snowflake-cli
+        run: pipx install --force snowflake-cli
 
       - name: Verify Snowflake CLI installation
         run: |
-          which snowsql
+          which snowsql || (echo "snowsql not found in PATH" && exit 1)
           snowsql -v
 
       - name: Deploy SQL scripts to Snowflake
         run: snowsql -f sql/deploy.sql  # Adjust path if necessary
-
-
-      - name: Deploy SQL scripts
-        run: snowsql -f sql/deploy.sql   # adjust the path if needed
