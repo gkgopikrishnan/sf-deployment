@@ -16,22 +16,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install SnowSQL with debug
+      - name: Install SnowSQL safely
         run: |
           set -x
-          curl -L -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowsql-1.4.3-linux_x86_64.bash
-          chmod +x snowsql-1.4.3-linux_x86_64.bash
-          ./snowsql-1.4.3-linux_x86_64.bash --yes | tee install.log
+          curl -L -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowsql-1.4.24-linux_x86_64.bash
+          chmod +x snowsql-1.4.24-linux_x86_64.bash
+          ./snowsql-1.4.24-linux_x86_64.bash --yes | tee install.log
       
-          # Debug: Check where snowsql is actually installed
-          find $HOME -type f -name snowsql
-      
-          # Add actual install path
-          export PATH=$HOME/.snowsql/versions/1.4.3/bin:$PATH
-      
-          # Confirm it's available
+          # Validate
+          ls -l $HOME/.snowsql/versions/1.4.24/bin/snowsql
+          export PATH=$HOME/.snowsql/versions/1.4.24/bin:$PATH
           which snowsql
           snowsql -v
+
 
       - name: Verify SnowSQL installation
         run: |
