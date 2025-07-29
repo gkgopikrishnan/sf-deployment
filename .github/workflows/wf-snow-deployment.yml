@@ -37,10 +37,24 @@ jobs:
       - name: Install Snowflake CLI manually via pipx
         run: pipx install --force snowflake-cli
 
+      - name: Find snowsql binary path dynamically
+        id: find_snowsql
+        run: |
+          SNOWSQL_PATH=$(find /opt/pipx_bin ~/.local/bin -type f -name snowsql 2>/dev/null | head -1)
+          if [ -z "$SNOWSQL_PATH" ]; then
+            echo "ERROR: snowsql binary not found in known locations."
+            exit 1
+          fi
+          echo "Found snowsql at: $SNOWSQL_PATH"
+          echo "SNOWSQL_BIN_DIR=$(dirname $SNOWSQL_PATH)" >> $GITHUB_ENV
+
+      - name: Add snowsql binary directory to PATH
+        run: echo "$SNOWSQL_BIN_DIR" >> $GITHUB_PATH
+
       - name: Verify Snowflake CLI installation
         run: |
           echo "PATH: $PATH"
-          which snowsql || (echo "snowsql not in PATH" && exit 1)
+          which snowsql
           snowsql -v
 
       - name: Deploy SQL scripts to Snowflake
