@@ -17,7 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install SnowSQL (manual .bash installer)
+      - name: Install SnowSQL (manual .bash installer with debug)
         run: |
           set -ex  # enable command tracing and exit on any error
           
@@ -27,23 +27,25 @@ jobs:
           SNOWSQL_URL=https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/${SNOWSQL_FILENAME}
           
           echo "Downloading SnowSQL from: ${SNOWSQL_URL}"
-          curl -L -v -o ${SNOWSQL_FILENAME} "${SNOWSQL_URL}"  # add -v for verbose curl output
+          curl -L -v -o ${SNOWSQL_FILENAME} "${SNOWSQL_URL}"
           
           echo "Downloaded file:"
           ls -l ${SNOWSQL_FILENAME}
-          file ${SNOWSQL_FILENAME}  # inspect the file type to ensure it’s valid
+          file ${SNOWSQL_FILENAME}
           
           chmod +x ${SNOWSQL_FILENAME}
           
           mkdir -p "${INSTALL_DIR}"
           echo "Running installer..."
           
-          # Run the installer with debugging env vars
-          DEBUG=1 bash -x ./${SNOWSQL_FILENAME} -- -y --target "${INSTALL_DIR}"
-          
+          # Use `yes` to avoid interactive prompt
+          DEBUG=1 yes '' | bash -x ./${SNOWSQL_FILENAME} -- -y --target "${INSTALL_DIR}"
+
           echo "Installation directory contents:"
           ls -R "${INSTALL_DIR}"
-          
+
+          # Add SnowSQL to PATH for this session
+          echo "${INSTALL_DIR}/bin" >> $GITHUB_PATH
 
       - name: Verify SnowSQL installation
         run: |
@@ -51,4 +53,6 @@ jobs:
           snowsql -v
 
       - name: Deploy SQL scripts using SnowSQL
-        run: snowsql -f sql/deploy.sql  # Adjust path to your SQL file
+        run: |
+          echo "Running deploy.sql"
+          snowsql -a $SNOWSQL_ACCOUNT -u $SNOWSQL_USER -p $SNOWSQL_PASSWORD -f sql/deploy.sql
