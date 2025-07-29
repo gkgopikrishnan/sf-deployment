@@ -1,46 +1,35 @@
-name: Deploy to Snowflake manual install
+# .github/workflows/snowsql-install.yml
+name: Install and Test SnowSQL
 
 on:
   push:
-    branches:
-      - main  # Adjust if using a different branch
 
 jobs:
-  deploy:
+  install-snowsql:
     runs-on: ubuntu-latest
+
     env:
-      SNOWSQL_ACCOUNT: SPHEUCZ-HQ66596        # Replace with your Snowflake account or use GitHub Secrets
-      SNOWSQL_USER: SFTRAINING                # Replace with your Snowflake user or use GitHub Secrets
-      SNOWSQL_PASSWORD: GoodSuperluck2025     # Replace with your password or use GitHub Secrets
+      SNOWSQL_VERSION: 1.2.24
+      SNOWSQL_DIR: $HOME/snowsql
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Install SnowSQL (manual .bash installer)
+      - name: Download SnowSQL installer
         run: |
-          SNOWSQL_VERSION=1.2.24
-          SNOWSQL_FILENAME=snowsql-${SNOWSQL_VERSION}-linux_x86_64.bash
-          SNOWSQL_URL=https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/${SNOWSQL_FILENAME}
-      
-          echo "Downloading SnowSQL from: ${SNOWSQL_URL}"
-          curl -L -o ${SNOWSQL_FILENAME} "${SNOWSQL_URL}"
-          chmod +x ${SNOWSQL_FILENAME}
-      
-          # Install non-interactively
-          yes '' | ./${SNOWSQL_FILENAME} -- -y
-      
-          # Add correct SnowSQL path to GITHUB_PATH
-          echo "$HOME/.snowsql/${SNOWSQL_VERSION}/scripts" >> $GITHUB_PATH
-      
+          mkdir -p $SNOWSQL_DIR
+          curl -L -o $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash \
+            https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-${SNOWSQL_VERSION}-linux_x86_64.bash
+          chmod +x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash
 
-      - name: Verify SnowSQL installation from PATH
+      - name: Install SnowSQL
+        run: |
+          bash $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d $SNOWSQL_DIR
+
+      - name: Add SnowSQL to PATH
+        run: |
+          echo "$SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}/bin" >> $GITHUB_PATH
+
+      - name: Verify SnowSQL installation
         run: |
           echo "Verifying snowsql from PATH..."
           which snowsql || { echo "❌ SnowSQL not found in PATH"; exit 1; }
           snowsql -v
-
-      - name: Deploy SQL scripts using SnowSQL
-        run: |
-          echo "Running deploy.sql"
-          snowsql -a $SNOWSQL_ACCOUNT -u $SNOWSQL_USER -p $SNOWSQL_PASSWORD -f sql/deploy.sql
