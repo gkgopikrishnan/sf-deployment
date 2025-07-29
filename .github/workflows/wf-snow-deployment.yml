@@ -19,22 +19,31 @@ jobs:
 
       - name: Install SnowSQL (manual .bash installer)
         run: |
-          set -ex
+          set -ex  # enable command tracing and exit on any error
           
-          SNOWSQL_VERSION="1.2.24"
-          INSTALL_DIR="$HOME/snowsql"
-          SNOWSQL_FILENAME="snowsql-${SNOWSQL_VERSION}-linux_x86_64.bash"
-          SNOWSQL_URL="https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/${SNOWSQL_FILENAME}"
-
-          echo "Downloading SnowSQL from: $SNOWSQL_URL"
-          curl -L -o "$SNOWSQL_FILENAME" "$SNOWSQL_URL"
-
-          chmod +x "$SNOWSQL_FILENAME"
-          mkdir -p "$INSTALL_DIR"
-
-          ./"$SNOWSQL_FILENAME" -- -y --target "$INSTALL_DIR"
-
-          echo "$INSTALL_DIR/snowsql/bin" >> "$GITHUB_PATH"
+          SNOWSQL_VERSION=1.2.24
+          INSTALL_DIR=/home/runner/snowsql
+          SNOWSQL_FILENAME=snowsql-${SNOWSQL_VERSION}-linux_x86_64.bash
+          SNOWSQL_URL=https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/${SNOWSQL_FILENAME}
+          
+          echo "Downloading SnowSQL from: ${SNOWSQL_URL}"
+          curl -L -v -o ${SNOWSQL_FILENAME} "${SNOWSQL_URL}"  # add -v for verbose curl output
+          
+          echo "Downloaded file:"
+          ls -l ${SNOWSQL_FILENAME}
+          file ${SNOWSQL_FILENAME}  # inspect the file type to ensure it’s valid
+          
+          chmod +x ${SNOWSQL_FILENAME}
+          
+          mkdir -p "${INSTALL_DIR}"
+          echo "Running installer..."
+          
+          # Run the installer with debugging env vars
+          DEBUG=1 bash -x ./${SNOWSQL_FILENAME} -- -y --target "${INSTALL_DIR}"
+          
+          echo "Installation directory contents:"
+          ls -R "${INSTALL_DIR}"
+          
 
       - name: Verify SnowSQL installation
         run: |
