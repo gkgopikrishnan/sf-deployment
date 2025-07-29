@@ -3,7 +3,7 @@ name: Deploy to Snowflake new
 on:
   push:
     branches:
-      - main  # or whichever branch you want to trigger the deploy
+      - main  # or your preferred branch
 
 jobs:
   deploy:
@@ -21,24 +21,28 @@ jobs:
           echo "PATH before Snowflake CLI install:"
           echo $PATH
           env
-
-      - name: Install Snowflake CLI
-        uses: Snowflake-Labs/snowflake-cli-action@v1.5
-
-      # Add pipx's bin directory to PATH explicitly for subsequent steps
-      - name: Add pipx bin directory to PATH
-        run: echo "/opt/pipx_bin" >> $GITHUB_PATH
-
-      - name: Print env and PATH 2
+          
+      - name: Install Python and pipx
         run: |
-          echo "PATH after adding pipx_bin:"
-          echo $PATH
-          env
+          python3 -m pip install --upgrade pip
+          python3 -m pip install --user pipx
+          python3 -m pipx ensurepath
 
-      - name: Check Snowflake CLI version
+      # Add pipx binaries path so snowsql can be found in next steps
+      - name: Add pipx binary path to environment
+        run: echo "${HOME}/.local/bin" >> $GITHUB_PATH
+
+      - name: Install Snowflake CLI manually via pipx
+        run: ~/.local/bin/pipx install --force snowflake-cli
+
+      - name: Verify Snowflake CLI installation
         run: |
           which snowsql
           snowsql -v
+
+      - name: Deploy SQL scripts to Snowflake
+        run: snowsql -f sql/deploy.sql  # Adjust path if necessary
+
 
       - name: Deploy SQL scripts
         run: snowsql -f sql/deploy.sql   # adjust the path if needed
