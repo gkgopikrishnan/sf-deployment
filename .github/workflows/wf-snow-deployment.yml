@@ -3,7 +3,7 @@ name: Deploy to Snowflake Stable
 on:
   push:
     branches:
-      - main  # your branch here
+      - main
 
 jobs:
   deploy:
@@ -13,18 +13,32 @@ jobs:
       SNOWSQL_USER: SFTRAINING
       SNOWSQL_PASSWORD: GoodSuperluck2025
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Install Snowflake CLI (Official Action)
+      - name: Install Snowflake CLI via official action
         uses: Snowflake-Labs/snowflake-cli-action@v1.5
 
-      - name: Add pipx bin directory to PATH
-        run: echo "/opt/pipx_bin" >> $GITHUB_PATH
-
-      - name: Verify snowsql is installed
+      - name: Find and add snowsql binary path
+        id: find_snowsql
+        shell: bash
         run: |
-          which snowsql || (echo "snowsql not found in PATH" && exit 1)
+          # Look for the snowsql binary in common pipx installation folders
+          SNOWSQL_PATH=$(find /opt/pipx/venvs /opt/pipx_bin ~/.local/bin -type f -name snowsql -perm -111 2>/dev/null | head -1)
+          if [[ -z "$SNOWSQL_PATH" ]]; then
+            echo "ERROR: snowsql binary not found!"
+            exit 1
+          fi
+          echo "Found snowsql at: $SNOWSQL_PATH"
+          SNOWSQL_BIN_DIR=$(dirname "$SNOWSQL_PATH")
+          echo "SNOWSQL_BIN_DIR=$SNOWSQL_BIN_DIR" >> $GITHUB_ENV
+          echo "$SNOWSQL_BIN_DIR" >> $GITHUB_PATH
+
+      - name: Check snowsql version and location
+        run: |
+          echo "PATH: $PATH"
+          which snowsql
           snowsql -v
 
-      - name: Deploy SQL scripts
+      - name: Deploy SQL Script
         run: snowsql -f sql/deploy.sql
