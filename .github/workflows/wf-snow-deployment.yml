@@ -33,3 +33,4 @@ jobs:
           echo "Verifying snowsql from PATH..."
           which snowsql || { echo "❌ SnowSQL not found in PATH"; exit 1; }
           snowsql -v
+ 
