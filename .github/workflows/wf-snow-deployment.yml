@@ -22,10 +22,11 @@ jobs:
           curl -L -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowsql-1.4.3-linux_x86_64.bash
           chmod +x snowsql-1.4.3-linux_x86_64.bash
           ./snowsql-1.4.3-linux_x86_64.bash --yes | tee install.log
-          cat install.log
-          rm snowsql-1.4.3-linux_x86_64.bash
-          echo "$HOME/.snowsql/bin" >> $GITHUB_PATH
+          echo "$HOME/.snowsql/bin" >> $GITHUB_PATH  # For next steps
+          export PATH="$HOME/.snowsql/bin:$PATH"    # Immediate use
+          snowsql -v                                # Optional: check version right here
       
+            
             
 
       - name: Verify SnowSQL installation
