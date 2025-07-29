@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install SnowSQL standalone Linux binary
+      - name: Install SnowSQL standalone Linux binary 1
         run: |
           curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowsql-1.4.3-linux_x86_64.bash
           bash snowsql-1.4.3-linux_x86_64.bash --yes
