@@ -21,10 +21,10 @@ jobs:
         run: |
           set -ex
           
-          SNOWSQL_VERSION="1.4.3"
+          SNOWSQL_VERSION="1.2.24"
           INSTALL_DIR="$HOME/snowsql"
           SNOWSQL_FILENAME="snowsql-${SNOWSQL_VERSION}-linux_x86_64.bash"
-          SNOWSQL_URL="https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/${SNOWSQL_FILENAME}"
+          SNOWSQL_URL="https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/${SNOWSQL_FILENAME}"
 
           echo "Downloading SnowSQL from: $SNOWSQL_URL"
           curl -L -o "$SNOWSQL_FILENAME" "$SNOWSQL_URL"
