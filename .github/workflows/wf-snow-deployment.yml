@@ -18,19 +18,27 @@ jobs:
 
       - name: Print env and PATH 1
         run: |
+          echo "PATH before Snowflake CLI install:"
           echo $PATH
           env
-    
+
       - name: Install Snowflake CLI
         uses: Snowflake-Labs/snowflake-cli-action@v1.5
 
+      # Add pipx's bin directory to PATH explicitly for subsequent steps
+      - name: Add pipx bin directory to PATH
+        run: echo "/opt/pipx_bin" >> $GITHUB_PATH
+
       - name: Print env and PATH 2
         run: |
+          echo "PATH after adding pipx_bin:"
           echo $PATH
           env
-        
+
       - name: Check Snowflake CLI version
-        run: snowsql -v
-        
+        run: |
+          which snowsql
+          snowsql -v
+
       - name: Deploy SQL scripts
-        run: snowsql -f sql/deploy.sql   # or your actual script path
+        run: snowsql -f sql/deploy.sql   # adjust the path if needed
