@@ -13,6 +13,6 @@ BEGIN
   FROM employees
   WHERE is_active = TRUE;
 
-  RETURN 'Activity log inserted successfully.';
+  RETURN 'Activity log inserted successfully.....!';
 END;
 $$;
