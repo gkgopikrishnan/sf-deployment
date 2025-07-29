@@ -3,7 +3,7 @@ name: Deploy to Snowflake manual install
 on:
   push:
     branches:
-      - main  # Replace with your deployment branch if different
+      - main  # Adjust if using a different branch
 
 jobs:
   deploy:
@@ -21,30 +21,19 @@ jobs:
         run: |
           set -ex
           
-          # Define variables
           SNOWSQL_VERSION="1.4.3"
           INSTALL_DIR="$HOME/snowsql"
           SNOWSQL_FILENAME="snowsql-${SNOWSQL_VERSION}-linux_x86_64.bash"
           SNOWSQL_URL="https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/${SNOWSQL_FILENAME}"
-          
-          # Download installer
-          echo "Downloading SnowSQL from $SNOWSQL_URL..."
+
+          echo "Downloading SnowSQL from: $SNOWSQL_URL"
           curl -L -o "$SNOWSQL_FILENAME" "$SNOWSQL_URL"
-          
-          # Ensure download is successful
-          if [[ ! -f "$SNOWSQL_FILENAME" ]]; then
-            echo "❌ Installer not found: $SNOWSQL_FILENAME"
-            exit 1
-          fi
 
-          # Make installer executable
           chmod +x "$SNOWSQL_FILENAME"
-
-          # Create install directory and run installer
           mkdir -p "$INSTALL_DIR"
-          "./$SNOWSQL_FILENAME" --target "$INSTALL_DIR" --yes
 
-          # Add SnowSQL to PATH for this job
+          ./"$SNOWSQL_FILENAME" -- -y --target "$INSTALL_DIR"
+
           echo "$INSTALL_DIR/snowsql/bin" >> "$GITHUB_PATH"
 
       - name: Verify SnowSQL installation
@@ -53,4 +42,4 @@ jobs:
           snowsql -v
 
       - name: Deploy SQL scripts using SnowSQL
-        run: snowsql -f sql/deploy.sql  # Adjust the path to your actual SQL file
+        run: snowsql -f sql/deploy.sql  # Adjust path to your SQL file
