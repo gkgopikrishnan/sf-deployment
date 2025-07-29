@@ -19,16 +19,17 @@ jobs:
       - name: Install SnowSQL safely
         run: |
           set -x
+          export SNOWSQL_DEST=$HOME/.snowsql
           curl -L -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowsql-1.4.3-linux_x86_64.bash
           chmod +x snowsql-1.4.3-linux_x86_64.bash
           ./snowsql-1.4.3-linux_x86_64.bash --yes | tee install.log
-      
-          # Validate
-          ls -l $HOME/.snowsql/versions/1.4.3/bin/snowsql
-          export PATH=$HOME/.snowsql/versions/1.4.3/bin:$PATH
+
+          echo "Installed to: $SNOWSQL_DEST"
+          ls -l $SNOWSQL_DEST/versions/1.4.3/bin/snowsql
+
+          export PATH="$SNOWSQL_DEST/versions/1.4.3/bin:$PATH"
           which snowsql
           snowsql -v
-
 
       - name: Verify SnowSQL installation
         run: |
