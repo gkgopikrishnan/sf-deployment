@@ -17,48 +17,38 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install SnowSQL (manual with full debug)
+      - name: Install SnowSQL (manual .bash installer with debug)
         run: |
-          set -ex  # Enable tracing and fail on error
-
+          set -ex
+          
           SNOWSQL_VERSION=1.2.24
           INSTALL_DIR=/home/runner/snowsql
           SNOWSQL_FILENAME=snowsql-${SNOWSQL_VERSION}-linux_x86_64.bash
           SNOWSQL_URL=https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/${SNOWSQL_FILENAME}
-
-          echo "Downloading SnowSQL: $SNOWSQL_URL"
+          
+          echo "Downloading SnowSQL from: ${SNOWSQL_URL}"
           curl -L -v -o ${SNOWSQL_FILENAME} "${SNOWSQL_URL}"
-
-          echo "Download complete. File details:"
+          
+          echo "Downloaded file info:"
           ls -l ${SNOWSQL_FILENAME}
           file ${SNOWSQL_FILENAME}
-
+          
           chmod +x ${SNOWSQL_FILENAME}
+          
           mkdir -p "${INSTALL_DIR}"
+          echo "Running installer..."
 
-          echo "Installing to ${INSTALL_DIR}..."
+          # Add extra debug here:
           DEBUG=1 yes '' | bash -x ./${SNOWSQL_FILENAME} -- -y --target "${INSTALL_DIR}"
 
-          echo "Installed files in ${INSTALL_DIR}:"
+          echo "Recursive directory listing of ${INSTALL_DIR}:"
           ls -R "${INSTALL_DIR}"
 
-          echo "Add SnowSQL bin to PATH"
+          echo "Contents of bin directory if exists:"
+          ls -l "${INSTALL_DIR}/bin" || echo "bin directory not found"
+
           echo "${INSTALL_DIR}/bin" >> $GITHUB_PATH
-          export PATH="${INSTALL_DIR}/bin:$PATH"
 
-          echo "Current PATH:"
-          echo $PATH
-
-          echo "Check if snowsql is in PATH:"
-          ls -l $(which snowsql || echo "snowsql not found")
-
-          echo "Try running snowsql version command directly:"
-          if [ -x "${INSTALL_DIR}/bin/snowsql" ]; then
-            "${INSTALL_DIR}/bin/snowsql" -v
-          else
-            echo "SnowSQL binary not found in expected path!"
-            exit 1
-          fi
 
       - name: Verify SnowSQL installation from PATH
         run: |
