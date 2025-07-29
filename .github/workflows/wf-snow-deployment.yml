@@ -18,9 +18,9 @@ jobs:
 
       - name: Install SnowSQL standalone Linux binary
         run: |
-          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowsql-1.4.23-linux_x86_64.bash
-          bash snowsql-1.4.23-linux_x86_64.bash --yes
-          rm snowsql-1.4.23-linux_x86_64.bash
+          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowsql-1.4.3-linux_x86_64.bash
+          bash snowsql-1.4.3-linux_x86_64.bash --yes
+          rm snowsql-1.4.3-linux_x86_64.bash
           echo "$HOME/.snowsql/bin" >> $GITHUB_PATH
 
       - name: Verify SnowSQL installation
