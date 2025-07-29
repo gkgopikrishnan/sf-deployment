@@ -11,25 +11,30 @@ jobs:
     env:
       SNOWSQL_ACCOUNT: SPHEUCZ-HQ66596        # Replace with your Snowflake account or use GitHub Secrets
       SNOWSQL_USER: SFTRAINING                # Replace with your Snowflake user or use GitHub Secrets
-      SNOWSQL_PASSWORD: GoodSuperluck2025     # Replace with your password or use GitHub Secrets securely
+      SNOWSQL_PASSWORD: GoodSuperluck2025     # Replace with your password or use GitHub Secrets
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install SnowSQL safely
+      - name: Install SnowSQL (manual tar.gz install with best practices)
         run: |
           set -x
-          export SNOWSQL_DEST=$HOME/.snowsql
-          curl -L -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowsql-1.4.3-linux_x86_64.bash
-          chmod +x snowsql-1.4.3-linux_x86_64.bash
-          ./snowsql-1.4.3-linux_x86_64.bash --yes | tee install.log
 
-          echo "Installed to: $SNOWSQL_DEST"
-          ls -l $SNOWSQL_DEST/versions/1.4.3/bin/snowsql
+          # Define version and target directory
+          SNOWSQL_VERSION="1.4.3"
+          INSTALL_DIR="$HOME/snowsql"
 
-          export PATH="$SNOWSQL_DEST/versions/1.4.3/bin:$PATH"
-          which snowsql
-          snowsql -v
+          # Download SnowSQL tar.gz
+          curl -L -o snowsql-${SNOWSQL_VERSION}.tar.gz \
+            https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/${SNOWSQL_VERSION}/linux_x86_64/snowsql-${SNOWSQL_VERSION}-linux_x86_64.tar.gz
+
+          # Extract manually
+          mkdir -p $INSTALL_DIR
+          tar -xzf snowsql-${SNOWSQL_VERSION}.tar.gz -C $INSTALL_DIR
+
+          # Add SnowSQL to PATH for all future steps
+          echo "$INSTALL_DIR/snowsql-${SNOWSQL_VERSION}/bin" >> $GITHUB_PATH
 
       - name: Verify SnowSQL installation
         run: |
@@ -37,4 +42,4 @@ jobs:
           snowsql -v
 
       - name: Deploy SQL scripts using SnowSQL
-        run: snowsql -f sql/deploy.sql  # Adjust script path as needed
+        run: snowsql -f sql/deploy.sql  # Adjust script path if needed
