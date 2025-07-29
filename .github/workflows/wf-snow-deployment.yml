@@ -1,9 +1,9 @@
-name: Deploy to Snowflake manual install
+name: Deploy to Snowflake Stable
 
 on:
   push:
     branches:
-      - main  # or your preferred branch
+      - main  # your branch here
 
 jobs:
   deploy:
@@ -13,49 +13,18 @@ jobs:
       SNOWSQL_USER: SFTRAINING
       SNOWSQL_PASSWORD: GoodSuperluck2025
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install Python and pipx
+      - name: Install Snowflake CLI (Official Action)
+        uses: Snowflake-Labs/snowflake-cli-action@v1.5
+
+      - name: Add pipx bin directory to PATH
+        run: echo "/opt/pipx_bin" >> $GITHUB_PATH
+
+      - name: Verify snowsql is installed
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install --user pipx
-          python3 -m pipx ensurepath
-
-      - name: Add pipx possible bin directories to PATH
-        run: |
-          echo "/opt/pipx_bin" >> $GITHUB_PATH
-          echo "${HOME}/.local/bin" >> $GITHUB_PATH
-
-      - name: List directories contents for debug
-        run: |
-          echo "Contents of /opt/pipx_bin:"
-          ls -la /opt/pipx_bin || echo "Directory not found"
-          echo "Contents of ~/.local/bin:"
-          ls -la ~/.local/bin || echo "Directory not found"
-
-      - name: Install Snowflake CLI manually via pipx
-        run: pipx install --force snowflake-cli
-
-      - name: Find snowsql binary path dynamically
-        id: find_snowsql
-        run: |
-          SNOWSQL_PATH=$(find /opt/pipx_bin ~/.local/bin -type f -name snowsql 2>/dev/null | head -1)
-          if [ -z "$SNOWSQL_PATH" ]; then
-            echo "ERROR: snowsql binary not found in known locations."
-            exit 1
-          fi
-          echo "Found snowsql at: $SNOWSQL_PATH"
-          echo "SNOWSQL_BIN_DIR=$(dirname $SNOWSQL_PATH)" >> $GITHUB_ENV
-
-      - name: Add snowsql binary directory to PATH
-        run: echo "$SNOWSQL_BIN_DIR" >> $GITHUB_PATH
-
-      - name: Verify Snowflake CLI installation
-        run: |
-          echo "PATH: $PATH"
-          which snowsql
+          which snowsql || (echo "snowsql not found in PATH" && exit 1)
           snowsql -v
 
-      - name: Deploy SQL scripts to Snowflake
-        run: snowsql -f sql/deploy.sql  # Adjust path if necessary
+      - name: Deploy SQL scripts
+        run: snowsql -f sql/deploy.sql
