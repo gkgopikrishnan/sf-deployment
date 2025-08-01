@@ -47,7 +47,7 @@ jobs:
           file "$SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash"
           echo "====🚀 Running installer===="
 
-          bash "$SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash" -y -d "$SNOWSQL_DIR" || {
+          bash "$HOME/snowsql/snowsql-1.4.4.bash" -y -d "$HOME/snowsql" || {
             echo "❌ Installer script failed! Exit code: $?";
             echo "====🪵 Checking for install.log====";
             if [ -f "$SNOWSQL_DIR/install.log" ]; then
