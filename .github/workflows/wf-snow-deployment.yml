@@ -73,15 +73,19 @@ jobs:
 
       - name: Add SnowSQL to PATH
         run: |
-          BIN_PATH="$SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}/bin"
-          echo "🔧 Adding SnowSQL bin path to \$GITHUB_PATH: $BIN_PATH"
+          echo "📁 Listing $SNOWSQL_DIR contents for debug:"
+          ls -alh $SNOWSQL_DIR
+
+          # Detect actual bin path dynamically
+          BIN_PATH=$(find $SNOWSQL_DIR -type d -name bin | head -n 1)
+
+          echo "🔧 Detected BIN_PATH: $BIN_PATH"
 
           if [ -d "$BIN_PATH" ]; then
             echo "$BIN_PATH" >> $GITHUB_PATH
             echo "✅ SnowSQL bin path added to PATH."
           else
-            echo "❌ Expected bin path does not exist: $BIN_PATH"
-            ls -alh $SNOWSQL_DIR
+            echo "❌ SnowSQL bin directory not found under $SNOWSQL_DIR"
             exit 1
           fi
 
