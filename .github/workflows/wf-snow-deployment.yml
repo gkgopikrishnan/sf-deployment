@@ -53,23 +53,33 @@ jobs:
           echo "📦 Installing SnowSQL version $SNOWSQL_VERSION..."
           echo "📁 Installation directory: $SNOWSQL_DIR"
 
+          # ✅ Ensure installer is executable
+          chmod +x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash
+
+          # ✅ Ensure ~/.snowsql exists (some versions require this)
+          mkdir -p ~/.snowsql
+
           # ✅ Correctly install to desired directory
           echo "🚀 Executing installer script non-interactively to target dir..."
           bash $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash --yes --install-dir $SNOWSQL_DIR
           INSTALL_STATUS=$?
-              
+
           echo "📄 Listing contents of $SNOWSQL_DIR after installation:"
           ls -alh $SNOWSQL_DIR
 
           echo "📄 Listing contents of $SNOWSQL_DIR/bin for debug:"
           ls -alh $SNOWSQL_DIR/bin
-      
+
           if [ $INSTALL_STATUS -ne 0 ]; then
             echo "❌ Installation failed with exit code $INSTALL_STATUS"
             exit 1
           fi
 
           echo "✅ Installation completed."
+        env:
+          SNOWSQL_VERSION: 1.4.4
+          SNOWSQL_DIR: $HOME/snowsql
+
       
       - name: Add SnowSQL to PATH
         run: |
