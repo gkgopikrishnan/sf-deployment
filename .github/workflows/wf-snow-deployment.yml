@@ -88,8 +88,6 @@ jobs:
           mkdir -p "$SNOWSQL_DIR/bin"
 
           echo "🚀 Executing installer script non-interactively..."
-          bash -x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d $SNOWSQL_DIR
-          
 
           # ✅ Use `yes ""` to bypass the interactive SNOWSQL_DEST prompt
           yes "" | bash -x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d "$SNOWSQL_DIR"
