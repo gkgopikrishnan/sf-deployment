@@ -12,132 +12,45 @@ jobs:
       SNOWSQL_DIR: $HOME/snowsql
 
     steps:
-      - name: Print environment details (Debug)
+      - name: Print environment details
         run: |
-          echo "🖥️ OS Info:"
-          uname -a
-          echo "🔧 Current User:"
-          whoami
-          echo "📁 HOME Dir:"
-          echo $HOME
-          echo "🧪 Debug: SNOWSQL_VERSION=$SNOWSQL_VERSION"
-          echo "🧪 Debug: SNOWSQL_DIR=$SNOWSQL_DIR"
+          set -ex
+          echo "OS: $(uname -a)"
+          echo "User: $(whoami)"
+          echo "HOME: $HOME"
 
-      - name: Prepare directory and download SnowSQL installer
+      - name: Download SnowSQL installer
         run: |
-          echo "📂 Creating directory $SNOWSQL_DIR..."
+          set -ex
           mkdir -p $SNOWSQL_DIR
-          
-          echo "🌐 Downloading SnowSQL installer..."
           DOWNLOAD_URL="https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowsql-${SNOWSQL_VERSION}-linux_x86_64.bash"
-          echo "🔗 URL: $DOWNLOAD_URL"
-
-          curl -L -v -o $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash "$DOWNLOAD_URL"
-          DOWNLOAD_STATUS=$?
-
-          echo "📄 Listing contents of $SNOWSQL_DIR:"
-          ls -alh $SNOWSQL_DIR
-
-          if [ $DOWNLOAD_STATUS -ne 0 ]; then
-            echo "❌ Download failed with exit code $DOWNLOAD_STATUS"
-            exit 1
-          fi
-
-          echo "✅ Download completed successfully."
-
-          echo "🔐 Making installer executable..."
+          curl -L -o $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash "$DOWNLOAD_URL"
           chmod +x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash
-
-      # - name: Install SnowSQL
-      #   run: |
-      #     echo "📦 Installing SnowSQL version $SNOWSQL_VERSION..."
-      #     echo "📁 Installation directory: $SNOWSQL_DIR"
-      
-      #     echo "🛠️ Patching installer to skip interactive prompt..."
-      #     sed -i 's/read -p.*SNOWSQL_DEST.*/SNOWSQL_DEST="$HOME\/bin"/' $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash
-          
-
-      #     # ✅ Ensure bin directory exists to avoid find failure
-      #     mkdir -p "$SNOWSQL_DIR/bin"
-          
-      #     echo "🚀 Executing installer script non-interactively..."
-      #     bash -x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d $SNOWSQL_DIR
-      #     INSTALL_STATUS=$?
-              
-      #     echo "📄 Listing contents of $SNOWSQL_DIR after installation:"
-      #     ls -alh $SNOWSQL_DIR
-      
-      #     if [ $INSTALL_STATUS -ne 0 ]; then
-      #       echo "❌ Installation failed with exit code $INSTALL_STATUS"
-      #       exit 1
-      #     fi
-
-      #     echo "✅ Installation completed."
-
 
       - name: Install SnowSQL
         run: |
-          echo "📦 Installing SnowSQL version $SNOWSQL_VERSION..."
-          echo "📁 Installation directory: $SNOWSQL_DIR"
+          set -ex
+          bash $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d $SNOWSQL_DIR
 
-          # ❌ Removed sed patch that redirected SNOWSQL_DEST to $HOME/bin
-          # It was overriding the actual target directory and breaking the next step
-          # Instead, rely on `-d $SNOWSQL_DIR` to control the install path
-
-          # ✅ Ensure bin directory exists to avoid find failure
-          mkdir -p "$SNOWSQL_DIR/bin"
-
-          echo "🚀 Executing installer script non-interactively..."
-
-          # ✅ Use `yes ""` to bypass the interactive SNOWSQL_DEST prompt
-          yes "" | bash -x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d "$SNOWSQL_DIR"
-
-          INSTALL_STATUS=$?
-
-          echo "📄 Listing contents of $SNOWSQL_DIR after installation:"
-          ls -alh $SNOWSQL_DIR
-
-          if [ $INSTALL_STATUS -ne 0 ]; then
-            echo "❌ Installation failed with exit code $INSTALL_STATUS"
-            exit 1
-          fi
-
-          echo "✅ Installation completed."
-
-      - name: Verify SnowSQL Installation
+      - name: Add SnowSQL to PATH & verify install
         run: |
-          echo "📁 Listing $SNOWSQL_DIR contents for debug:"
-          ls -alh $SNOWSQL_DIR
-
-          # ✅ Explicitly run the installer again to ensure snowsql is extracted
-          # This is required because piping 'yes "" |' may not work reliably with all bash scripts
-          # and the binary might not be placed under $SNOWSQL_DIR/bin without this step.
-          echo "🚀 Re-executing installer to ensure binary is extracted..."
-          bash $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d "$SNOWSQL_DIR"
-
-          BIN_PATH=$(find $SNOWSQL_DIR -type d -name bin | head -n 1)
-          echo "🔧 Detected BIN_PATH: $BIN_PATH"
-      
-          if [ -d "$BIN_PATH" ]; then
-            echo "$BIN_PATH" >> $GITHUB_PATH  # Adds to PATH for *future* steps
-            export PATH="$BIN_PATH:$PATH"    # Adds to PATH for *this* step
-      
-            echo "✅ SnowSQL bin path added to PATH."
-      
-            # The below comment explains an important nuance in GitHub Actions
-            # This echo adds the bin path to $GITHUB_PATH, which correctly updates PATH in *future* steps,
-            # but does not affect this step unless we also export PATH here (which we did above).
-      
-            echo "🔍 Checking if snowsql is available..."
-            which snowsql || { echo "❌ SnowSQL not found in PATH"; exit 1; }
-      
-            echo "🧪 Running 'snowsql -v' to verify version:"
-            snowsql -v || { echo "❌ SnowSQL failed to run"; exit 1; }
-          else
-            echo "❌ SnowSQL bin directory not found under $SNOWSQL_DIR"
+          set -ex
+          BIN_PATH="$SNOWSQL_DIR/bin"
+          if [ ! -x "$BIN_PATH/snowsql" ]; then
+            echo "❌ snowsql binary not found or not executable in $BIN_PATH"
+            echo "Directory listing:"
+            ls -alh "$BIN_PATH"
+            # Optional: Print installer log if it exists
+            if [ -f "$SNOWSQL_DIR/install.log" ]; then
+              echo "------ install.log ------"
+              cat "$SNOWSQL_DIR/install.log"
+              echo "------------------------"
+            fi
             exit 1
           fi
-        env:
-          SNOWSQL_VERSION: 1.4.4
-          SNOWSQL_DIR: $HOME/snowsql
 
+          echo "$BIN_PATH" >> $GITHUB_PATH      # For future steps
+          export PATH="$BIN_PATH:$PATH"         # For this step
+
+          which snowsql
+          snowsql -v
