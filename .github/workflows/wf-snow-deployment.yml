@@ -15,88 +15,36 @@ jobs:
       - name: Print Environment Details
         run: |
           set -ex
-          echo "====🖥️ OS & User Details===="
-          uname -a
-          whoami
-          echo "HOME is: $HOME"
-          echo "PWD is: $PWD"
-          echo "PATH is: $PATH"
-          echo "SNOWSQL_VERSION: $SNOWSQL_VERSION"
-          echo "SNOWSQL_DIR: $SNOWSQL_DIR"
+          echo "HOME=$HOME"
+          echo "SNOWSQL_DIR=$SNOWSQL_DIR"
+          echo "PATH=$PATH"
 
       - name: Prepare Directory and Download SnowSQL Installer
         run: |
           set -ex
-          echo "====📂 Creating SNOWSQL_DIR: $SNOWSQL_DIR===="
           mkdir -p "$SNOWSQL_DIR"
-
           DOWNLOAD_URL="https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowsql-${SNOWSQL_VERSION}-linux_x86_64.bash"
-          echo "====🌐 Downloading SnowSQL installer from: $DOWNLOAD_URL===="
-          curl -L -v -o "$SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash" "$DOWNLOAD_URL"
-          
-          echo "====📄 Listing contents of SNOWSQL_DIR after download===="
+          curl -L -o "$SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash" "$DOWNLOAD_URL"
+          chmod +x "$SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash"
           ls -alh "$SNOWSQL_DIR"
 
-          echo "Making installer executable..."
-          chmod +x "$SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash"
-          ls -l "$SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash"
-
-      - name: Install SnowSQL (with detailed debug)
+      - name: Install SnowSQL (with debug)
         run: |
           set -ex
-          echo "====📦 About to run SnowSQL installer===="
-          echo "Listing SNOWSQL_DIR before install:"
           ls -alh "$SNOWSQL_DIR"
-          echo "Installer file type:"
-          file "$SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash"
-
-          echo "====🚀 Running installer script===="
           bash "$SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash" -y -d "$SNOWSQL_DIR" || {
-            echo "❌ Installer script failed with exit code: $?"
-            echo "====🪵 Checking for install.log file ===="
+            echo "Installer failed!"
             if [ -f "$SNOWSQL_DIR/install.log" ]; then
-              echo "==== install.log BEGIN ===="
               cat "$SNOWSQL_DIR/install.log"
-              echo "==== install.log END ===="
-            else
-              echo "No install.log found."
-            fi
+           fi
             exit 1
           }
-
-          echo "====📄 Listing SNOWSQL_DIR contents after install===="
           ls -alh "$SNOWSQL_DIR"
 
-          if [ -d "$SNOWSQL_DIR/bin" ]; then
-            echo "====📄 Listing bin directory contents ===="
-            ls -alh "$SNOWSQL_DIR/bin"
-          else
-            echo "❗ Warning: bin directory not found after installation!"
-          fi
-
-      - name: Add SnowSQL to PATH and Verify Installation
+      - name: Add SnowSQL to PATH and verify
         run: |
           set -ex
-          BIN_PATH="$SNOWSQL_DIR/bin"
-
-          echo "====🔧 Adding SnowSQL to PATH===="
-          echo "$BIN_PATH" >> $GITHUB_PATH
-          export PATH="$BIN_PATH:$PATH"
-          echo "Current PATH: $PATH"
-
-          echo "====🕵️ Verifying snowsql executable presence===="
-          ls -alh "$BIN_PATH"
-          which snowsql || { echo "❌ snowsql not found in PATH"; exit 1; }
-
-          echo "====🧪 Running snowsql version command===="
-          snowsql -v || { echo "❌ snowsql failed to execute"; exit 1; }
-
-      - name: Print install.log if exists (always)
-        if: always()
-        run: |
-          if [ -f "$SNOWSQL_DIR/install.log" ]; then
-            echo "==== Printing install.log ===="
-            cat "$SNOWSQL_DIR/install.log"
-          else
-            echo "No install.log found at end of job."
-          fi
+          echo "$SNOWSQL_DIR/bin" >> $GITHUB_PATH
+          export PATH="$SNOWSQL_DIR/bin:$PATH"
+          which snowsql
+          snowsql -v
