@@ -1,5 +1,3 @@
-update below with fix part, dont remove any debug statments..
-
 name: Install and Test SnowSQL
 
 on:
