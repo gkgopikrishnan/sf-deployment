@@ -21,7 +21,7 @@ jobs:
           echo "SNOWSQL_VERSION=1.4.4" >> $GITHUB_ENV
           echo "SNOWSQL_DIR=$HOME/snowsql" >> $GITHUB_ENV
 
-      - name: Prepare directory and download SnowSQL installer here
+      - name: Download SnowSQL installer
         run: |
           mkdir -p "$SNOWSQL_DIR"
           cd "$SNOWSQL_DIR"
@@ -30,41 +30,37 @@ jobs:
           SNOWSQL_VERSION: 1.4.4
           SNOWSQL_DIR: $HOME/snowsql
 
-      - name: Verify SnowSQL Installation
+      - name: Install and configure SnowSQL
         run: |
-          echo "📁 Listing $SNOWSQL_DIR contents for debug:"
+          echo "📁 Listing contents of $SNOWSQL_DIR:"
           ls -alh $SNOWSQL_DIR
 
-          # ✅ Explicitly run the installer again to ensure snowsql is extracted
-          echo "🚀 Re-executing installer to ensure binary is extracted..."
+          echo "🚀 Running SnowSQL installer..."
           bash $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d "$SNOWSQL_DIR"
 
           BIN_PATH=$(find $SNOWSQL_DIR -type d -name bin | head -n 1)
           echo "🔧 Detected BIN_PATH: $BIN_PATH"
-      
+
           if [ -d "$BIN_PATH" ]; then
-            echo "$BIN_PATH" >> $GITHUB_PATH  # Adds to PATH for *future* steps
-            export PATH="$BIN_PATH:$PATH"    # Adds to PATH for *this* step
-      
+            echo "$BIN_PATH" >> $GITHUB_PATH  # Makes it available to *future* steps
+            export PATH="$BIN_PATH:$PATH"    # Makes it available to *this* step
+
             echo "✅ SnowSQL bin path added to PATH."
-      
-            # This echo adds the bin path to $GITHUB_PATH, which correctly updates PATH in *future* steps,
-            # but does not affect this step unless we also export PATH here (which we did above).
-      
-            echo "🔍 Checking if snowsql is available..."
-            which snowsql || { echo "❌ SnowSQL not found in PATH"; exit 1; }
-      
-            echo "🧪 Running 'snowsql -v' to verify version:"
-            snowsql -v || { echo "❌ SnowSQL failed to run"; exit 1; }
+
+            echo "🔍 Checking snowsql path..."
+            which snowsql || { echo "❌ SnowSQL not found"; exit 1; }
+
+            echo "🧪 Verifying SnowSQL version..."
+            snowsql -v || { echo "❌ SnowSQL execution failed"; exit 1; }
           else
-            echo "❌ SnowSQL bin directory not found under $SNOWSQL_DIR"
+            echo "❌ Could not find bin path under $SNOWSQL_DIR"
             exit 1
           fi
         env:
           SNOWSQL_VERSION: 1.4.4
           SNOWSQL_DIR: $HOME/snowsql
 
-      - name: Run your SnowSQL commands here
+      - name: Run your SnowSQL commands
         run: |
           echo "🎯 Running SnowSQL command..."
           snowsql -v
