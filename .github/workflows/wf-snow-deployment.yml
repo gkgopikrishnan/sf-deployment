@@ -2,6 +2,11 @@ name: Deploy SnowSQL Job
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'dev'
 
 jobs:
   deploy:
