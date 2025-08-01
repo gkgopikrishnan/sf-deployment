@@ -89,6 +89,9 @@ jobs:
 
           echo "🚀 Executing installer script non-interactively..."
           bash -x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d $SNOWSQL_DIR
+          # ✅ SNOWSQL_DEST must be passed to avoid interactive prompt despite -y
+          SNOWSQL_DEST="$SNOWSQL_DIR" bash -x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d "$SNOWSQL_DIR"
+
           INSTALL_STATUS=$?
 
           echo "📄 Listing contents of $SNOWSQL_DIR after installation:"
