@@ -89,4 +89,14 @@ jobs:
           which snowsql || { echo "❌ snowsql not found in PATH"; exit 1; }
 
           echo "====🧪 Running snowsql version command===="
-          snowsql -v || { echo "❌ snowsql failed to execute"; exit
+          snowsql -v || { echo "❌ snowsql failed to execute"; exit 1; }
+
+      - name: Print install.log if exists (always)
+        if: always()
+        run: |
+          if [ -f "$SNOWSQL_DIR/install.log" ]; then
+            echo "==== Printing install.log ===="
+            cat "$SNOWSQL_DIR/install.log"
+          else
+            echo "No install.log found at end of job."
+          fi
