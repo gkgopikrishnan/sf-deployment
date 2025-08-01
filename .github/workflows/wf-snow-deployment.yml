@@ -101,6 +101,8 @@ jobs:
       - name: Verify SnowSQL Installation
         run: |
           echo "🔍 Checking if snowsql is available in PATH..."
+          export PATH="$SNOWSQL_DIR/bin:$PATH" 
+          
           which snowsql || { echo "❌ SnowSQL binary not found in PATH"; exit 1; }
       
           echo "🧪 Running 'snowsql -v' to verify version:"
