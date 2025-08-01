@@ -91,7 +91,8 @@ jobs:
           bash -x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d $SNOWSQL_DIR
           
 
-          SNOWSQL_DEST="$SNOWSQL_DIR" bash -x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d "$SNOWSQL_DIR"
+          # ✅ Use `yes ""` to bypass the interactive SNOWSQL_DEST prompt
+          yes "" | bash -x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d "$SNOWSQL_DIR"
 
           INSTALL_STATUS=$?
 
