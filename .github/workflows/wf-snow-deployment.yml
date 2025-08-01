@@ -55,11 +55,15 @@ jobs:
       
           echo "🛠️ Patching installer to skip interactive prompt..."
           sed -i 's/read -p.*SNOWSQL_DEST.*/SNOWSQL_DEST="$HOME\/bin"/' $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash
-      
+          
+
+          # ✅ Ensure bin directory exists to avoid find failure
+          mkdir -p "$SNOWSQL_DIR/bin"
+          
           echo "🚀 Executing installer script non-interactively..."
           bash -x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d $SNOWSQL_DIR
           INSTALL_STATUS=$?
-      
+              
           echo "📄 Listing contents of $SNOWSQL_DIR after installation:"
           ls -alh $SNOWSQL_DIR
       
