@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      SNOWSQL_VERSION: 1.4.4
+      SNOWSQL_VERSION: 1.2.24
       SNOWSQL_DIR: $HOME/snowsql
 
     steps:
@@ -29,7 +29,7 @@ jobs:
           mkdir -p $SNOWSQL_DIR
           
           echo "🌐 Downloading SnowSQL installer..."
-          DOWNLOAD_URL="https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowsql-${SNOWSQL_VERSION}-linux_x86_64.bash"
+          DOWNLOAD_URL="https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-${SNOWSQL_VERSION}-linux_x86_64.bash"
           echo "🔗 URL: $DOWNLOAD_URL"
 
           curl -L -v -o $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash "$DOWNLOAD_URL"
