@@ -54,7 +54,8 @@ jobs:
           echo "📁 Installation directory: $SNOWSQL_DIR"
 
           echo "🛠️ Patching installer to skip interactive prompt..."
-          sed -i 's/read -p.*SNOWSQL_DEST.*/SNOWSQL_DEST="'"$SNOWSQL_DIR\/bin"'"/' $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash
+          # Use `#` as delimiter to avoid conflicts with `/` in path
+          sed -i "s#read -p.*SNOWSQL_DEST.*#SNOWSQL_DEST=\"$SNOWSQL_DIR/bin\"#" "$SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash"
 
           # ✅ Ensure bin directory exists to avoid find failure
           mkdir -p "$SNOWSQL_DIR/bin"
