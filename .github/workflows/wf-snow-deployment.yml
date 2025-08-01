@@ -74,7 +74,7 @@ jobs:
 
           echo "✅ Installation completed."
       
-      - name: Add SnowSQL to PATH and verify
+      - name: Verify SnowSQL Installation
         run: |
           echo "📁 Listing $SNOWSQL_DIR contents for debug:"
           ls -alh $SNOWSQL_DIR
@@ -83,9 +83,14 @@ jobs:
           echo "🔧 Detected BIN_PATH: $BIN_PATH"
       
           if [ -d "$BIN_PATH" ]; then
-            echo "$BIN_PATH" >> $GITHUB_PATH  # For future steps
-            export PATH="$BIN_PATH:$PATH"     # For this step
+            echo "$BIN_PATH" >> $GITHUB_PATH  # Adds to PATH for *future* steps
+            export PATH="$BIN_PATH:$PATH"    # Adds to PATH for *this* step
+      
             echo "✅ SnowSQL bin path added to PATH."
+      
+            # The below comment explains an important nuance in GitHub Actions
+            # This echo adds the bin path to $GITHUB_PATH, which correctly updates PATH in *future* steps,
+            # but does not affect this step unless we also export PATH here (which we did above).
       
             echo "🔍 Checking if snowsql is available..."
             which snowsql || { echo "❌ SnowSQL not found in PATH"; exit 1; }
