@@ -108,7 +108,13 @@ jobs:
         run: |
           echo "📁 Listing $SNOWSQL_DIR contents for debug:"
           ls -alh $SNOWSQL_DIR
-      
+
+          # ✅ Explicitly run the installer again to ensure snowsql is extracted
+          # This is required because piping 'yes "" |' may not work reliably with all bash scripts
+          # and the binary might not be placed under $SNOWSQL_DIR/bin without this step.
+          echo "🚀 Re-executing installer to ensure binary is extracted..."
+          bash $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d "$SNOWSQL_DIR"
+
           BIN_PATH=$(find $SNOWSQL_DIR -type d -name bin | head -n 1)
           echo "🔧 Detected BIN_PATH: $BIN_PATH"
       
@@ -134,3 +140,4 @@ jobs:
         env:
           SNOWSQL_VERSION: 1.4.4
           SNOWSQL_DIR: $HOME/snowsql
+
