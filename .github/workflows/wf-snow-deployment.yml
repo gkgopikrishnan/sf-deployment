@@ -79,12 +79,10 @@ jobs:
         run: |
           echo "📁 Listing $SNOWSQL_DIR contents for debug:"
           ls -alh $SNOWSQL_DIR
-
-          # Detect actual bin path dynamically
+      
           BIN_PATH=$(find $SNOWSQL_DIR -type d -name bin | head -n 1)
-
           echo "🔧 Detected BIN_PATH: $BIN_PATH"
-
+      
           if [ -d "$BIN_PATH" ]; then
             echo "$BIN_PATH" >> $GITHUB_PATH
             echo "✅ SnowSQL bin path added to PATH."
@@ -92,11 +90,14 @@ jobs:
             echo "❌ SnowSQL bin directory not found under $SNOWSQL_DIR"
             exit 1
           fi
+        env:
+          SNOWSQL_DIR: $HOME/snowsql
+      
 
-      - name: Verify SnowSQL installation
+      - name: Verify SnowSQL Installation
         run: |
           echo "🔍 Checking if snowsql is available in PATH..."
           which snowsql || { echo "❌ SnowSQL binary not found in PATH"; exit 1; }
-
+      
           echo "🧪 Running 'snowsql -v' to verify version:"
           snowsql -v || { echo "❌ SnowSQL failed to run"; exit 1; }
