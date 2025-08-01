@@ -52,20 +52,17 @@ jobs:
         run: |
           echo "📦 Installing SnowSQL version $SNOWSQL_VERSION..."
           echo "📁 Installation directory: $SNOWSQL_DIR"
-      
-          echo "🛠️ Patching installer to skip interactive prompt..."
-          sed -i 's/read -p.*SNOWSQL_DEST.*/SNOWSQL_DEST="$HOME\/bin"/' $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash
-          
 
-          # ✅ Ensure bin directory exists to avoid find failure
-          mkdir -p "$SNOWSQL_DIR/bin"
-          
-          echo "🚀 Executing installer script non-interactively..."
-          bash -x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d $SNOWSQL_DIR
+          # ✅ Correctly install to desired directory
+          echo "🚀 Executing installer script non-interactively to target dir..."
+          bash $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash --yes --install-dir $SNOWSQL_DIR
           INSTALL_STATUS=$?
               
           echo "📄 Listing contents of $SNOWSQL_DIR after installation:"
           ls -alh $SNOWSQL_DIR
+
+          echo "📄 Listing contents of $SNOWSQL_DIR/bin for debug:"
+          ls -alh $SNOWSQL_DIR/bin
       
           if [ $INSTALL_STATUS -ne 0 ]; then
             echo "❌ Installation failed with exit code $INSTALL_STATUS"
@@ -78,13 +75,7 @@ jobs:
         run: |
           echo "📁 Listing $SNOWSQL_DIR contents for debug:"
           ls -alh $SNOWSQL_DIR
-      
-          # Fix: Ensure the SnowSQL tarball is extracted before finding bin
-          if ls $SNOWSQL_DIR/snowsql-*.bash 1> /dev/null 2>&1; then
-            echo "📦 Extracting SnowSQL bash installer..."
-            bash $SNOWSQL_DIR/snowsql-*.bash --extract-only --yes
-          fi
-      
+
           BIN_PATH=$(find $SNOWSQL_DIR -type d -name bin | head -n 1)
           echo "🔧 Detected BIN_PATH: $BIN_PATH"
       
