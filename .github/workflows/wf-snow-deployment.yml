@@ -29,12 +29,14 @@ jobs:
 
       - name: 📥 Download SnowSQL Installer
         run: |
-          echo "📥 Downloading SnowSQL $SNOWSQL_VERSION..."
+          echo "🌐 Downloading SnowSQL installer..."
           mkdir -p "$SNOWSQL_DIR"
           curl -L "https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/${SNOWSQL_VERSION}/linux_x86_64/snowsql-${SNOWSQL_VERSION}.bash" -o "$SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash"
+          chmod +x "$SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash"
         env:
-          SNOWSQL_VERSION: ${{ env.SNOWSQL_VERSION }}
-          SNOWSQL_DIR: ${{ env.SNOWSQL_DIR }}
+          SNOWSQL_VERSION: 1.4.4
+          SNOWSQL_DIR: $HOME/snowsql
+
 
       - name: 🛠️ Install SnowSQL Non-Interactively
         run: |
