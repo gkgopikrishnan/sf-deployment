@@ -48,32 +48,59 @@ jobs:
           echo "🔐 Making installer executable..."
           chmod +x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash
 
+      # - name: Install SnowSQL
+      #   run: |
+      #     echo "📦 Installing SnowSQL version $SNOWSQL_VERSION..."
+      #     echo "📁 Installation directory: $SNOWSQL_DIR"
+      
+      #     echo "🛠️ Patching installer to skip interactive prompt..."
+      #     sed -i 's/read -p.*SNOWSQL_DEST.*/SNOWSQL_DEST="$HOME\/bin"/' $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash
+          
+
+      #     # ✅ Ensure bin directory exists to avoid find failure
+      #     mkdir -p "$SNOWSQL_DIR/bin"
+          
+      #     echo "🚀 Executing installer script non-interactively..."
+      #     bash -x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d $SNOWSQL_DIR
+      #     INSTALL_STATUS=$?
+              
+      #     echo "📄 Listing contents of $SNOWSQL_DIR after installation:"
+      #     ls -alh $SNOWSQL_DIR
+      
+      #     if [ $INSTALL_STATUS -ne 0 ]; then
+      #       echo "❌ Installation failed with exit code $INSTALL_STATUS"
+      #       exit 1
+      #     fi
+
+      #     echo "✅ Installation completed."
+
+
       - name: Install SnowSQL
         run: |
           echo "📦 Installing SnowSQL version $SNOWSQL_VERSION..."
           echo "📁 Installation directory: $SNOWSQL_DIR"
-      
-          echo "🛠️ Patching installer to skip interactive prompt..."
-          sed -i 's/read -p.*SNOWSQL_DEST.*/SNOWSQL_DEST="$HOME\/bin"/' $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash
-          
+
+          # ❌ Removed sed patch that redirected SNOWSQL_DEST to $HOME/bin
+          # It was overriding the actual target directory and breaking the next step
+          # Instead, rely on `-d $SNOWSQL_DIR` to control the install path
 
           # ✅ Ensure bin directory exists to avoid find failure
           mkdir -p "$SNOWSQL_DIR/bin"
-          
+
           echo "🚀 Executing installer script non-interactively..."
           bash -x $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d $SNOWSQL_DIR
           INSTALL_STATUS=$?
-              
+
           echo "📄 Listing contents of $SNOWSQL_DIR after installation:"
           ls -alh $SNOWSQL_DIR
-      
+
           if [ $INSTALL_STATUS -ne 0 ]; then
             echo "❌ Installation failed with exit code $INSTALL_STATUS"
             exit 1
           fi
 
           echo "✅ Installation completed."
-      
+
       - name: Verify SnowSQL Installation
         run: |
           echo "📁 Listing $SNOWSQL_DIR contents for debug:"
