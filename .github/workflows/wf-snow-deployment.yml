@@ -100,10 +100,19 @@ jobs:
       
       - name: Verify SnowSQL Installation
         run: |
+          echo "📁 Listing $SNOWSQL_DIR contents for debug:"
+          ls -alh $SNOWSQL_DIR
+      
+          echo "🚀 Re-executing installer to extract binary..."
+          bash $SNOWSQL_DIR/snowsql-${SNOWSQL_VERSION}.bash -y -d "$SNOWSQL_DIR"
+      
           echo "🔍 Checking if snowsql is available in PATH..."
-          export PATH="$SNOWSQL_DIR/bin:$PATH" 
-          
+          export PATH="$SNOWSQL_DIR/bin:$PATH"
+      
           which snowsql || { echo "❌ SnowSQL binary not found in PATH"; exit 1; }
       
           echo "🧪 Running 'snowsql -v' to verify version:"
           snowsql -v || { echo "❌ SnowSQL failed to run"; exit 1; }
+        env:
+          SNOWSQL_VERSION: 1.4.4
+          SNOWSQL_DIR: $HOME/snowsql
