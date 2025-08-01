@@ -73,12 +73,17 @@ jobs:
           fi
 
           echo "✅ Installation completed."
-
-
+      
       - name: Add SnowSQL to PATH
         run: |
           echo "📁 Listing $SNOWSQL_DIR contents for debug:"
           ls -alh $SNOWSQL_DIR
+      
+          # Fix: Ensure the SnowSQL tarball is extracted before finding bin
+          if ls $SNOWSQL_DIR/snowsql-*.bash 1> /dev/null 2>&1; then
+            echo "📦 Extracting SnowSQL bash installer..."
+            bash $SNOWSQL_DIR/snowsql-*.bash --extract-only --yes
+          fi
       
           BIN_PATH=$(find $SNOWSQL_DIR -type d -name bin | head -n 1)
           echo "🔧 Detected BIN_PATH: $BIN_PATH"
@@ -93,7 +98,6 @@ jobs:
         env:
           SNOWSQL_DIR: $HOME/snowsql
       
-
       - name: Verify SnowSQL Installation
         run: |
           echo "🔍 Checking if snowsql is available in PATH..."
