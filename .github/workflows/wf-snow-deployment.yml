@@ -74,36 +74,28 @@ jobs:
 
           echo "✅ Installation completed."
       
-      - name: Add SnowSQL to PATH
+      - name: Add SnowSQL to PATH and verify
         run: |
           echo "📁 Listing $SNOWSQL_DIR contents for debug:"
           ls -alh $SNOWSQL_DIR
       
           BIN_PATH=$(find $SNOWSQL_DIR -type d -name bin | head -n 1)
           echo "🔧 Detected BIN_PATH: $BIN_PATH"
-
-          # ✅ Note: echo "$BIN_PATH" >> $GITHUB_PATH correctly adds $HOME/snowsql/bin to the PATH — 
-          # but only in *future steps*, not the *current step* or any commands run immediately after.
-          # To make SnowSQL available *right now*, we must also export it in this step.
+      
           if [ -d "$BIN_PATH" ]; then
-            echo "$BIN_PATH" >> $GITHUB_PATH
-            export PATH="$BIN_PATH:$PATH"
+            echo "$BIN_PATH" >> $GITHUB_PATH  # For future steps
+            export PATH="$BIN_PATH:$PATH"     # For this step
             echo "✅ SnowSQL bin path added to PATH."
+      
+            echo "🔍 Checking if snowsql is available..."
+            which snowsql || { echo "❌ SnowSQL not found in PATH"; exit 1; }
+      
+            echo "🧪 Running 'snowsql -v' to verify version:"
+            snowsql -v || { echo "❌ SnowSQL failed to run"; exit 1; }
           else
             echo "❌ SnowSQL bin directory not found under $SNOWSQL_DIR"
             exit 1
           fi
         env:
+          SNOWSQL_VERSION: 1.4.4
           SNOWSQL_DIR: $HOME/snowsql
-
-      
-      - name: Verify SnowSQL Installation
-        run: |
-          echo "🔍 Checking if snowsql is available in PATH..."
-        
-          #  export PATH="$SNOWSQL_DIR/bin:$PATH" 
-          
-          which snowsql || { echo "❌ SnowSQL binary not found in PATH"; exit 1; }
-      
-          echo "🧪 Running 'snowsql -v' to verify version:"
-          snowsql -v || { echo "❌ SnowSQL failed to run"; exit 1; }
